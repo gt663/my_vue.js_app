@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Booking Page</title>
+    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        h1 {
+            color: #b9429b;
+        }
+        .lesson-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .lesson-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 300px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .lesson-box img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .lesson-box h3 {
+            margin: 10px 0;
+            color: #333;
+        }
+        .lesson-box p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .lesson-box button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #e3b73d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Lessons Booking</h1>
+        <div class="lesson-container">
+            <div class="lesson-box" v-for="(lesson, index) in lessons" :key="index">
+                <img :src="lesson.image" :alt="lesson.subject + ' image'">
+                <h3>{{ lesson.subject }}</h3>
+                <p><strong>Price:</strong> ${{ lesson.price }}</p>
+                <p><strong>Location:</strong> {{ lesson.location }}</p>
+                <p><strong>Availability:</strong> {{ lesson.availability }}</p>
+                <button @click="addToCart(lesson)">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    lessons: [
+                        { subject: 'Maths', price: 50, location: 'London', availability: 5, image: 'https://via.placeholder.com/300x150?text=Maths' },
+                        { subject: 'English', price: 40, location: 'Room B', availability: 5, image: 'https://via.placeholder.com/300x150?text=English' },
+                        { subject: 'Science', price: 60, location: 'Room C', availability: 5, image: 'https://via.placeholder.com/300x150?text=Science' },
+                        { subject: 'History', price: 45, location: 'Room D', availability: 5, image: 'https://via.placeholder.com/300x150?text=History' },
+                        { subject: 'Art', price: 30, location: 'Room E', availability: 5, image: 'https://via.placeholder.com/300x150?text=Art' },
+                        { subject: 'Music', price: 70, location: 'Room F', availability: 5, image: 'https://via.placeholder.com/300x150?text=Music' },
+                        { subject: 'Geography', price: 55, location: 'Room G', availability: 5, image: 'https://via.placeholder.com/300x150?text=Geography' },
+                        { subject: 'Computer Science', price: 80, location: 'Room H', availability: 5, image: 'https://via.placeholder.com/300x150?text=Computer+Science' },
+                        { subject: 'Physics', price: 75, location: 'Room I', availability: 5, image: 'https://via.placeholder.com/300x150?text=Physics' },
+                        { subject: 'Chemistry', price: 65, location: 'Room J', availability: 5, image: 'https://via.placeholder.com/300x150?text=Chemistry' }
+                    ],
+                    cart: []
+                };
+            },
+            methods: {
+                addToCart(lesson) {
+                    if (lesson.availability > 0) {
+                        this.cart.push(lesson);
+                        lesson.availability -= 1; // Reduce availability by 1
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
