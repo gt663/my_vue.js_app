@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lesson Booking Page</title>
+    <title>Book Lessons</title>
     <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
     <style>
         body {
@@ -11,56 +11,80 @@
             margin: 50px;
         }
         h1 {
-            color: #b9429b;
+            color: blue;
         }
-        .lesson-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+        .box {
+            border: 1px solid black;
+            border-radius: 5px;
+            width: 250px;
+            padding: 15px;
+            margin: 10px;
+            float: left;
         }
-        .lesson-box {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            width: 300px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .lesson-box img {
+        img {
             width: 100%;
-            height: 150px;
+            height: 100px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 5px;
         }
-        .lesson-box h3 {
-            margin: 10px 0;
-            color: #333;
-        }
-        .lesson-box p {
-            margin: 5px 0;
-            font-size: 0.9em;
-        }
-        .lesson-box button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            background-color: #e3b73d;
+        button {
+            background-color: green;
             color: white;
             border: none;
-            border-radius: 5px;
+            padding: 5px;
             cursor: pointer;
+        }
+        .ctrls {
+            margin-bottom: 20px;
+        }
+        .ctrls label {
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
     <div id="app">
         <h1>Lessons Booking</h1>
-        <div class="lesson-container">
-            <div class="lesson-box" v-for="(lesson, index) in lessons" :key="index">
-                <img :src="lesson.image" :alt="lesson.subject + ' image'">
-                <h3>{{ lesson.subject }}</h3>
-                <p><strong>Price:</strong> ${{ lesson.price }}</p>
-                <p><strong>Location:</strong> {{ lesson.location }}</p>
-                <p><strong>Availability:</strong> {{ lesson.availability }}</p>
-                <button @click="addToCart(lesson)">Add to Cart</button>
+
+        <!-- Cart -->
+        <div>
+            <button>
+                Shopping Cart ({{ cart.length }})
+            </button>
+        </div>
+
+        <!-- Sorting -->
+        <div class="ctrls">
+            <label>Sort:</label>
+            <label>
+                <input type="radio" v-model="srtBy" value="subject"> Subject
+            </label>
+            <label>
+                <input type="radio" v-model="srtBy" value="price"> Price
+            </label>
+            <label>
+                <input type="radio" v-model="srtBy" value="location"> Location
+            </label>
+            <label>
+                <input type="radio" v-model="srtBy" value="availability"> availability
+            </label>
+            <label>
+                <input type="radio" v-model="srtOrder" value="asc"> Sort by ascending order
+            </label>
+            <label>
+                <input type="radio" v-model="srtOrder" value="desc"> Sort by descending order
+            </label>
+        </div>
+
+        <!-- Lessons -->
+        <div>
+            <div class="box" v-for="(l, i) in sorted" :key="i">
+                <img :src="l.img" :alt="l.subject">
+                <p>Subject: {{ l.subject }}</p>
+                <p>price: ${{ l.price }}</p>
+                <p>Location: {{ l.location }}</p>
+                <p>availability: {{ l.avail }}</p>
+                <button v-on:click="add(l)">Add to cart </button>
             </div>
         </div>
     </div>
@@ -70,26 +94,47 @@
             el: '#app',
             data() {
                 return {
-                    lessons: [
-                        { subject: 'Maths', price: 50, location: 'London', availability: 5, image: 'https://via.placeholder.com/300x150?text=Maths' },
-                        { subject: 'English', price: 40, location: 'Room B', availability: 5, image: 'https://via.placeholder.com/300x150?text=English' },
-                        { subject: 'Science', price: 60, location: 'Room C', availability: 5, image: 'https://via.placeholder.com/300x150?text=Science' },
-                        { subject: 'History', price: 45, location: 'Room D', availability: 5, image: 'https://via.placeholder.com/300x150?text=History' },
-                        { subject: 'Art', price: 30, location: 'Room E', availability: 5, image: 'https://via.placeholder.com/300x150?text=Art' },
-                        { subject: 'Music', price: 70, location: 'Room F', availability: 5, image: 'https://via.placeholder.com/300x150?text=Music' },
-                        { subject: 'Geography', price: 55, location: 'Room G', availability: 5, image: 'https://via.placeholder.com/300x150?text=Geography' },
-                        { subject: 'Computer Science', price: 80, location: 'Room H', availability: 5, image: 'https://via.placeholder.com/300x150?text=Computer+Science' },
-                        { subject: 'Physics', price: 75, location: 'Room I', availability: 5, image: 'https://via.placeholder.com/300x150?text=Physics' },
-                        { subject: 'Chemistry', price: 65, location: 'Room J', availability: 5, image: 'https://via.placeholder.com/300x150?text=Chemistry' }
+                    list: [
+                        { subject: 'Math', price: 50, location: 'A', avail: 5, img: 'img.jpg' },
+                        { subject: 'Eng', price: 40, location: 'B', avail: 5, img: 'img.jpg' },
+                        { subject: 'Sci', price: 60, location: 'C', avail: 5, img: 'img.jpg' },
+                        { subject: 'Hist', price: 45, location: 'D', avail: 5, img: 'img.jpg' },
+                        { subject: 'Art', price: 30, location: 'E', avail: 5, img: 'img.jpg' },
+                        { subject: 'Music', price: 70, location: 'F', avail: 5, img: 'img.jpg' },
+                        { subject: 'Geo', price: 55, location: 'G', avail: 5, img: 'img.jpg' },
+                        { subject: 'CS', price: 80, location: 'H', avail: 5, img: 'img.jpg' },
+                        { subject: 'Phys', price: 75, location: 'I', avail: 5, img: 'img.jpg' },
+                        { subject: 'Chem', price: 65, location: 'J', avail: 5, img: 'img.jpg' }
                     ],
-                    cart: []
+                    cart: [],
+                    srtBy: 'subject',
+                    srtOrder: 'asc'
                 };
             },
+            computed: {
+                sorted() {
+                    return this.list.sort((a, b) => {
+                        let x = a[this.srtBy];
+                        let y = b[this.srtBy];
+
+                        if (typeof x === 'string') {
+                            x = x.toLowerCase();
+                            y = y.toLowerCase();
+                        }
+
+                        if (this.srtOrder === 'asc') {
+                            return x < y ? -1 : x > y ? 1 : 0;
+                        } else {
+                            return x > y ? -1 : x < y ? 1 : 0;
+                        }
+                    });
+                }
+            },
             methods: {
-                addToCart(lesson) {
-                    if (lesson.availability > 0) {
-                        this.cart.push(lesson);
-                        lesson.availability -= 1; // Reduce availability by 1
+                add(l) {
+                    if (l.avail > 0) {
+                        this.cart.push(l);
+                        l.avail--;
                     }
                 }
             }
