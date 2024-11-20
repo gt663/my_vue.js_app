@@ -34,57 +34,116 @@
             padding: 5px;
             cursor: pointer;
         }
+        button:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
         .ctrls {
             margin-bottom: 20px;
         }
         .ctrls label {
             margin-right: 10px;
         }
+        .cart-container {
+            clear: both;
+        }
+        .cart-item {
+            border: 1px solid black;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .remove-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .checkout-form {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+        .checkout-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .checkout-form input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
-        <h1>Lessons Booking</h1>
-
-        <!-- Cart -->
-        <div>
-            <button>
-                Shopping Cart ({{ cart.length }})
-            </button>
+        <div v-if="!showCart">
+            <!-- Lesson Booking Page -->
+            <h1>Lessons Booking</h1>
+            <div>
+                <button @click="handleCartPage" :disabled="cart.length === 0">
+                    Shopping Cart ({{ cart.length }})
+                </button>
+            </div>
+            <div class="ctrls">
+                <label>Sort:</label>
+                <label>
+                    <input type="radio" v-model="srtBy" value="subject"> Subject
+                </label>
+                <label>
+                    <input type="radio" v-model="srtBy" value="price"> Price
+                </label>
+                <label>
+                    <input type="radio" v-model="srtBy" value="location"> Location
+                </label>
+                <label>
+                    <input type="radio" v-model="srtBy" value="availability"> Availability
+                </label>
+                <label>
+                    <input type="radio" v-model="srtOrder" value="asc"> Ascending
+                </label>
+                <label>
+                    <input type="radio" v-model="srtOrder" value="desc"> Descending
+                </label>
+            </div>
+            <div>
+                <div class="box" v-for="(l, i) in sorted" :key="i">
+                    <img :src="l.img" :alt="l.subject">
+                    <p>Subject: {{ l.subject }}</p>
+                    <p>Price: ${{ l.price }}</p>
+                    <p>Location: {{ l.location }}</p>
+                    <p>Availability: {{ l.avail }}</p>
+                    <button @click="add(l)">Add to Cart</button>
+                </div>
+            </div>
         </div>
-
-        <!-- Sorting -->
-        <div class="ctrls">
-            <label>Sort:</label>
-            <label>
-                <input type="radio" v-model="srtBy" value="subject"> Subject
-            </label>
-            <label>
-                <input type="radio" v-model="srtBy" value="price"> Price
-            </label>
-            <label>
-                <input type="radio" v-model="srtBy" value="location"> Location
-            </label>
-            <label>
-                <input type="radio" v-model="srtBy" value="availability"> availability
-            </label>
-            <label>
-                <input type="radio" v-model="srtOrder" value="asc"> Sort by ascending order
-            </label>
-            <label>
-                <input type="radio" v-model="srtOrder" value="desc"> Sort by descending order
-            </label>
-        </div>
-
-        <!-- Lessons -->
-        <div>
-            <div class="box" v-for="(l, i) in sorted" :key="i">
-                <img :src="l.img" :alt="l.subject">
-                <p>Subject: {{ l.subject }}</p>
-                <p>price: ${{ l.price }}</p>
-                <p>Location: {{ l.location }}</p>
-                <p>availability: {{ l.avail }}</p>
-                <button v-on:click="add(l)">Add to cart </button>
+        <div v-else>
+            <!-- Cart Page -->
+            <h1>Shopping Cart</h1>
+            <button @click="togglePage">Back to Lessons</button>
+            <div class="cart-container">
+                <div v-if="cart.length === 0">
+                    <p>Your cart is empty.</p>
+                </div>
+                <div v-else>
+                    <div class="cart-item" v-for="(item, index) in cart" :key="index">
+                        <p><strong>Subject:</strong> {{ item.subject }}</p>
+                        <p><strong>Price:</strong> ${{ item.price }}</p>
+                        <p><strong>Location:</strong> {{ item.location }}</p>
+                        <button class="remove-btn" @click="remove(index)">Remove</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Checkout Form -->
+            <div class="checkout-form">
+                <h2>Checkout</h2>
+                <label for="name">Name:</label>
+                <input type="text" id="name" v-model="name" placeholder="Enter your name">
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" v-model="phone" placeholder="Enter your phone number">
+                <button @click="checkout">Checkout</button>
             </div>
         </div>
     </div>
@@ -94,40 +153,39 @@
             el: '#app',
             data() {
                 return {
-                    list: [
-                        { subject: 'Math', price: 50, location: 'A', avail: 5, img: 'img.jpg' },
-                        { subject: 'Eng', price: 40, location: 'B', avail: 5, img: 'img.jpg' },
-                        { subject: 'Sci', price: 60, location: 'C', avail: 5, img: 'img.jpg' },
-                        { subject: 'Hist', price: 45, location: 'D', avail: 5, img: 'img.jpg' },
-                        { subject: 'Art', price: 30, location: 'E', avail: 5, img: 'img.jpg' },
-                        { subject: 'Music', price: 70, location: 'F', avail: 5, img: 'img.jpg' },
-                        { subject: 'Geo', price: 55, location: 'G', avail: 5, img: 'img.jpg' },
-                        { subject: 'CS', price: 80, location: 'H', avail: 5, img: 'img.jpg' },
-                        { subject: 'Phys', price: 75, location: 'I', avail: 5, img: 'img.jpg' },
-                        { subject: 'Chem', price: 65, location: 'J', avail: 5, img: 'img.jpg' }
-                    ],
+                    list: [], // Initial empty list
                     cart: [],
                     srtBy: 'subject',
-                    srtOrder: 'asc'
+                    srtOrder: 'asc',
+                    showCart: false,
+                    name: '',
+                    phone: ''
                 };
+            },
+            mounted() {
+                // Fetch lessons data from backend on component mount
+                fetch('http://localhost:3000/api/lessons_info')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.list = data; // Set the list to the fetched data
+                    })
+                    .catch(error => {
+                        console.error('Error fetching lessons:', error);
+                    });
             },
             computed: {
                 sorted() {
-                    return this.list.sort((a, b) => {
-                        let x = a[this.srtBy];
-                        let y = b[this.srtBy];
-
-                        if (typeof x === 'string') {
-                            x = x.toLowerCase();
-                            y = y.toLowerCase();
-                        }
-
-                        if (this.srtOrder === 'asc') {
-                            return x < y ? -1 : x > y ? 1 : 0;
-                        } else {
-                            return x > y ? -1 : x < y ? 1 : 0;
-                        }
-                    });
+                    return this.list
+                        .filter(lesson => !this.cart.includes(lesson))
+                        .sort((a, b) => {
+                            let x = a[this.srtBy];
+                            let y = b[this.srtBy];
+                            if (typeof x === 'string') {
+                                x = x.toLowerCase();
+                                y = y.toLowerCase();
+                            }
+                            return this.srtOrder === 'asc' ? (x < y ? -1 : 1) : (x > y ? -1 : 1);
+                        });
                 }
             },
             methods: {
@@ -136,6 +194,34 @@
                         this.cart.push(l);
                         l.avail--;
                     }
+                },
+                remove(index) {
+                    const item = this.cart.splice(index, 1)[0];
+                    item.avail++;
+                },
+                togglePage() {
+                    this.showCart = !this.showCart;
+                },
+                handleCartPage() {
+                    if (this.cart.length > 0) {
+                        this.togglePage();
+                    }
+                },
+                checkout() {
+                    const namePattern = /^[A-Za-z\s]+$/;
+                    const phonePattern = /^[0-9]+$/;
+                    if (!namePattern.test(this.name)) {
+                        alert('Name must contain only letters.');
+                        return;
+                    }
+                    if (!phonePattern.test(this.phone)) {
+                        alert('Phone must contain only numbers.');
+                        return;
+                    }
+                    alert(`Order submitted! Thank you, ${this.name}.`);
+                    this.name = '';
+                    this.phone = '';
+                    this.cart = [];
                 }
             }
         });
