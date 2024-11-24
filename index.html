@@ -218,8 +218,51 @@
                     this.showCart = !this.showCart;
                 },
                 checkout() {
-                    alert(`Thank you, ${this.name}! Your lessons are booked. We will contact you at ${this.phone}.`);
-                    this.cart = [];
+                    // Validate name (only letters and spaces)
+                    const nameValid = /^[a-zA-Z\s]+$/.test(this.name);
+                    // Validate phone (only digits)
+                    const phoneValid = /^[0-9]+$/.test(this.phone);
+                    if (!nameValid) {
+                        alert('Please enter a valid name (letters only).');
+                        return;
+                    }
+                    if (!phoneValid) {
+                        alert('Please enter a valid phone number (numbers only).');
+                        return;
+                    }
+
+                    // Prepare data for submission
+                    const data = {
+                        name: this.name,
+                        phone: this.phone,
+                        lessons: this.cart.map(item => ({
+                            subject: item.subject,
+                            price: item.price,
+                            location: item.location
+                        }))
+                    };
+
+                    // Send data to the server
+                    fetch('http://localhost:3000/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to place the order.');
+                            }
+                            return response.json();
+                        })
+                        .then(() => {
+                            alert(`Thank you, ${this.name}! Your lessons are booked.`);
+                            this.cart = [];
+                            this.name = '';
+                            this.phone = '';
+                        })
+                        .catch(error => {
+                            alert('Error placing order: ' + error.message);
+                        });
                 },
                 handleCartPage() {
                     this.showCart = true;
