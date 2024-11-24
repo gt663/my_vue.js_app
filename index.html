@@ -20,6 +20,7 @@
             padding: 15px;
             margin: 10px;
             float: left;
+            box-sizing: border-box; /* Ensures padding doesn't increase the box size */
         }
         img {
             width: 100%;
@@ -46,11 +47,15 @@
         }
         .cart-container {
             clear: both;
+            display: flex;
+            flex-direction: column;
         }
         .cart-item {
             border: 1px solid black;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 15px;
+            margin: 10px;
+            width: 250px;
+            box-sizing: border-box; /* Keep size the same as lessons */
         }
         .remove-btn {
             background-color: red;
@@ -75,12 +80,22 @@
             margin-bottom: 10px;
             padding: 5px;
         }
+        .cart-items {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkout {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <div v-if="!showCart">
-            <!-- Lesson Booking Page -->
             <h1>Lessons Booking</h1>
             <div>
                 <button @click="handleCartPage" :disabled="cart.length === 0">
@@ -90,27 +105,27 @@
             <div class="ctrls">
                 <label>Sort:</label>
                 <label>
-                    <input type="radio" v-model="srtBy" value="subject"> Subject
+                    <input type="radio" v-model="srtBy" value="subject" /> Subject
                 </label>
                 <label>
-                    <input type="radio" v-model="srtBy" value="price"> Price
+                    <input type="radio" v-model="srtBy" value="price" /> Price
                 </label>
                 <label>
-                    <input type="radio" v-model="srtBy" value="location"> Location
+                    <input type="radio" v-model="srtBy" value="location" /> Location
                 </label>
                 <label>
-                    <input type="radio" v-model="srtBy" value="availability"> Availability
+                    <input type="radio" v-model="srtBy" value="availability" /> Availability
                 </label>
                 <label>
-                    <input type="radio" v-model="srtOrder" value="asc"> Ascending
+                    <input type="radio" v-model="srtOrder" value="asc" /> Ascending
                 </label>
                 <label>
-                    <input type="radio" v-model="srtOrder" value="desc"> Descending
+                    <input type="radio" v-model="srtOrder" value="desc" /> Descending
                 </label>
             </div>
             <div>
                 <div class="box" v-for="(l, i) in sorted" :key="i">
-                    <img :src="l.img" :alt="l.subject">
+                    <img :src="'http://localhost:3000/images/' + l.img" :alt="l.subject">
                     <p>Subject: {{ l.subject }}</p>
                     <p>Price: ${{ l.price }}</p>
                     <p>Location: {{ l.location }}</p>
@@ -120,40 +135,43 @@
             </div>
         </div>
         <div v-else>
-            <!-- Cart Page -->
             <h1>Shopping Cart</h1>
             <button @click="togglePage">Back to Lessons</button>
             <div class="cart-container">
-                <div v-if="cart.length === 0">
-                    <p>Your cart is empty.</p>
+                <div class="cart-items">
+                    <div v-if="cart.length === 0">
+                        <p>Your cart is empty.</p>
+                    </div>
+                    <div v-else>
+                        <div class="cart-item" v-for="(item, index) in cart" :key="index">
+                            <img :src="'http://localhost:3000/images/' + item.img" :alt="item.subject">
+                            <p><strong>Subject:</strong> {{ item.subject }}</p>
+                            <p><strong>Price:</strong> ${{ item.price }}</p>
+                            <p><strong>Location:</strong> {{ item.location }}</p>
+                            <p><strong>Availability:</strong> {{ item.avail }}</p> 
+                            <button class="remove-btn" @click="remove(index)">Remove</button>
+                        </div>
+                    </div>
                 </div>
-                <div v-else>
-                    <div class="cart-item" v-for="(item, index) in cart" :key="index">
-                        <p><strong>Subject:</strong> {{ item.subject }}</p>
-                        <p><strong>Price:</strong> ${{ item.price }}</p>
-                        <p><strong>Location:</strong> {{ item.location }}</p>
-                        <button class="remove-btn" @click="remove(index)">Remove</button>
+                <div class="checkout">
+                    <div class="checkout-form">
+                        <h2>Checkout</h2>
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" v-model="name" placeholder="Enter your name">
+                        <label for="phone">Phone:</label>
+                        <input type="text" id="phone" v-model="phone" placeholder="Enter your phone number">
+                        <button @click="checkout">Checkout</button>
                     </div>
                 </div>
             </div>
-            <!-- Checkout Form -->
-            <div class="checkout-form">
-                <h2>Checkout</h2>
-                <label for="name">Name:</label>
-                <input type="text" id="name" v-model="name" placeholder="Enter your name">
-                <label for="phone">Phone:</label>
-                <input type="text" id="phone" v-model="phone" placeholder="Enter your phone number">
-                <button @click="checkout">Checkout</button>
-            </div>
         </div>
     </div>
-
     <script>
         new Vue({
             el: '#app',
             data() {
                 return {
-                    list: [], // Initial empty list
+                    list: [],
                     cart: [],
                     srtBy: 'subject',
                     srtOrder: 'asc',
@@ -163,15 +181,12 @@
                 };
             },
             mounted() {
-                // Fetch lessons data from backend on component mount
                 fetch('http://localhost:3000/api/lessons_info')
                     .then(response => response.json())
                     .then(data => {
-                        this.list = data; // Set the list to the fetched data
+                        this.list = data;
                     })
-                    .catch(error => {
-                        console.error('Error fetching lessons:', error);
-                    });
+                    .catch(error => console.error('Error fetching lessons:', error));
             },
             computed: {
                 sorted() {
@@ -202,26 +217,12 @@
                 togglePage() {
                     this.showCart = !this.showCart;
                 },
-                handleCartPage() {
-                    if (this.cart.length > 0) {
-                        this.togglePage();
-                    }
-                },
                 checkout() {
-                    const namePattern = /^[A-Za-z\s]+$/;
-                    const phonePattern = /^[0-9]+$/;
-                    if (!namePattern.test(this.name)) {
-                        alert('Name must contain only letters.');
-                        return;
-                    }
-                    if (!phonePattern.test(this.phone)) {
-                        alert('Phone must contain only numbers.');
-                        return;
-                    }
-                    alert(`Order submitted! Thank you, ${this.name}.`);
-                    this.name = '';
-                    this.phone = '';
+                    alert(`Thank you, ${this.name}! Your lessons are booked. We will contact you at ${this.phone}.`);
                     this.cart = [];
+                },
+                handleCartPage() {
+                    this.showCart = true;
                 }
             }
         });
