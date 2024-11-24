@@ -166,6 +166,7 @@
             </div>
         </div>
     </div>
+
     <script>
         new Vue({
             el: '#app',
@@ -237,35 +238,50 @@
                         phone: this.phone,
                         lessons: this.cart.map(item => ({
                             subject: item.subject,
-                            price: item.price,
-                            location: item.location
+                            availability: item.avail
                         }))
                     };
 
-                    // Send data to the server
+                    // Send data to the server to save the order
                     fetch('http://localhost:3000/api/orders', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Failed to place the order.');
-                            }
-                            return response.json();
-                        })
-                        .then(() => {
-                            alert(`Thank you, ${this.name}! Your lessons are booked.`);
-                            this.cart = [];
-                            this.name = '';
-                            this.phone = '';
-                        })
-                        .catch(error => {
-                            alert('Error placing order: ' + error.message);
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to place the order.');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        // After successfully placing the order, update the availability of lessons
+                        this.cart.forEach(item => {
+                            fetch('http://localhost:3000/api/update_lesson', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    subject: item.subject,
+                                    avail: item.avail
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(() => {
+                                console.log('Lesson availability updated');
+                            })
+                            .catch(error => console.error('Error updating lesson availability:', error));
                         });
+
+                        // Clear the cart and reset the fields
+                        alert(`Thank you, ${this.name}! Your order has been placed.`);
+                        this.cart = [];
+                        this.name = '';
+                        this.phone = '';
+                    })
+                    .catch(error => console.error('Error during checkout:', error));
                 },
                 handleCartPage() {
-                    this.showCart = true;
+                    this.showCart = !this.showCart;
                 }
             }
         });
