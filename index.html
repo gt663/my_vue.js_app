@@ -189,19 +189,30 @@
                     })
                     .catch(error => console.error('Error fetching lessons:', error));
             },
+
             computed: {
                 sorted() {
-                    return this.list.sort((a, b) => {
+                    return this.list.slice().sort((a, b) => {
                         let x = a[this.srtBy];
                         let y = b[this.srtBy];
-                        if (typeof x === 'string') {
+
+                        if (this.srtBy === 'price' || this.srtBy === 'availability') {
+                            x = Number(x);
+                            y = Number(y);
+                        } else if (typeof x === 'string' && typeof y === 'string') {
                             x = x.toLowerCase();
                             y = y.toLowerCase();
                         }
-                        return this.srtOrder === 'asc' ? (x < y ? -1 : 1) : (x > y ? -1 : 1);
+                        
+                        if (this.srtOrder === 'asc') {
+                            return x < y ? -1 : x > y ? 1 : 0;
+                        } else {
+                            return x > y ? -1 : x < y ? 1 : 0;
+                        }
                     });
                 }
             },
+
             methods: {
                 add(l) {
                     
@@ -254,7 +265,7 @@
                         phone: this.phone,
                         lessons: this.cart.map(item => ({
                             subject: item.subject,
-                            availability: item.avail
+                            bookedSeats: item.bookedSeats
                         }))
                     };
 
@@ -273,12 +284,13 @@
                     .then(() => {
                         // After successfully placing the order, update the availability of lessons
                         this.cart.forEach(item => {
+                            const updatedAvail =item.avail - item.bookedSeats;
                             fetch('http://localhost:3000/api/update_lesson', {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     subject: item.subject,
-                                    avail: item.avail
+                                    avail: updatedAvail
                                 })
                             })
                             .then(response => response.json())
