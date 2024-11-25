@@ -130,7 +130,7 @@
                     <p>Price: ${{ l.price }}</p>
                     <p>Location: {{ l.location }}</p>
                     <p>Availability: {{ l.avail }}</p>
-                    <button @click="add(l)">Add to Cart</button>
+                    <button @click="add(l)" :disabled="l.avail === 0">Add to Cart</button>
                 </div>
             </div>
         </div>
@@ -148,7 +148,7 @@
                             <p><strong>Subject:</strong> {{ item.subject }}</p>
                             <p><strong>Price:</strong> ${{ item.price }}</p>
                             <p><strong>Location:</strong> {{ item.location }}</p>
-                            <p><strong>Availability:</strong> {{ item.avail }}</p> 
+                            <p><strong>Booked Seats:</strong> {{ item.bookedSeats }}</p> 
                             <button class="remove-btn" @click="remove(index)">Remove</button>
                         </div>
                     </div>
@@ -191,29 +191,45 @@
             },
             computed: {
                 sorted() {
-                    return this.list
-                        .filter(lesson => !this.cart.includes(lesson))
-                        .sort((a, b) => {
-                            let x = a[this.srtBy];
-                            let y = b[this.srtBy];
-                            if (typeof x === 'string') {
-                                x = x.toLowerCase();
-                                y = y.toLowerCase();
-                            }
-                            return this.srtOrder === 'asc' ? (x < y ? -1 : 1) : (x > y ? -1 : 1);
-                        });
+                    return this.list.sort((a, b) => {
+                        let x = a[this.srtBy];
+                        let y = b[this.srtBy];
+                        if (typeof x === 'string') {
+                            x = x.toLowerCase();
+                            y = y.toLowerCase();
+                        }
+                        return this.srtOrder === 'asc' ? (x < y ? -1 : 1) : (x > y ? -1 : 1);
+                    });
                 }
             },
             methods: {
                 add(l) {
-                    if (l.avail > 0) {
-                        this.cart.push(l);
-                        l.avail--;
+                    
+                    const existingLesson = this.cart.find(item => item.subject === l.subject);
+
+                    if (existingLesson) {
+                        existingLesson.bookedSeats++;
+                    } else {
+                        this.cart.push({
+                            ...l, 
+                            bookedSeats: 1 
+                        });
                     }
+
+                    l.avail--;
                 },
                 remove(index) {
-                    const item = this.cart.splice(index, 1)[0];
-                    item.avail++;
+                    const item = this.cart[index];
+                    const lessonInLessonPage = this.list.find(lesson => lesson.subject === item.subject);
+                    if (lessonInLessonPage) {
+                        lessonInLessonPage.avail += 1;
+                    }
+                    if (item.bookedSeats > 1) {
+                        item.bookedSeats--;
+                       
+                    } else {
+                        this.cart.splice(index, 1);
+                    }
                 },
                 togglePage() {
                     this.showCart = !this.showCart;
@@ -272,16 +288,16 @@
                             .catch(error => console.error('Error updating lesson availability:', error));
                         });
 
-                        // Clear the cart and reset the fields
-                        alert(`Thank you, ${this.name}! Your order has been placed.`);
+                        // Clear the cart and form
                         this.cart = [];
                         this.name = '';
                         this.phone = '';
+                        alert('Order placed successfully!');
                     })
-                    .catch(error => console.error('Error during checkout:', error));
+                    .catch(error => console.error('Error:', error));
                 },
                 handleCartPage() {
-                    this.showCart = !this.showCart;
+                    this.showCart = true;
                 }
             }
         });
