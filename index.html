@@ -129,7 +129,7 @@
             </div>
             <div>
                 <div class="box" v-for="(l, i) in sorted" :key="i">
-                    <img :src="'http://localhost:3000/images/' + l.img" :alt="l.subject">
+                    <img :src="'https://ex-fkjs.onrender.com/images/' + l.img" :alt="l.subject">
                     <p>Subject: {{ l.subject }}</p>
                     <p>Price: ${{ l.price }}</p>
                     <p>Location: {{ l.location }}</p>
@@ -148,7 +148,7 @@
                     </div>
                     <div v-else>
                         <div class="cart-item" v-for="(item, index) in cart" :key="index">
-                            <img :src="'http://localhost:3000/images/' + item.img" :alt="item.subject">
+                            <img :src="'https://ex-fkjs.onrender.com/images/' + item.img" :alt="item.subject">
                             <p><strong>Subject:</strong> {{ item.subject }}</p>
                             <p><strong>Price:</strong> ${{ item.price }}</p>
                             <p><strong>Location:</strong> {{ item.location }}</p>
