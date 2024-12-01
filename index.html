@@ -129,7 +129,7 @@
             </div>
             <div>
                 <div class="box" v-for="(l, i) in sorted" :key="i">
-                    <img :src="'https://ex-fkjs.onrender.com/images/' + l.img" :alt="l.subject">
+                    <img :src="'https://lessons-booking.onrender.com/images/' + l.img" :alt="l.subject">
                     <p>Subject: {{ l.subject }}</p>
                     <p>Price: ${{ l.price }}</p>
                     <p>Location: {{ l.location }}</p>
@@ -148,7 +148,7 @@
                     </div>
                     <div v-else>
                         <div class="cart-item" v-for="(item, index) in cart" :key="index">
-                            <img :src="'https://ex-fkjs.onrender.com/images/' + item.img" :alt="item.subject">
+                            <img :src="'https://lessons-booking.onrender.com/images/' + item.img" :alt="item.subject">
                             <p><strong>Subject:</strong> {{ item.subject }}</p>
                             <p><strong>Price:</strong> ${{ item.price }}</p>
                             <p><strong>Location:</strong> {{ item.location }}</p>
@@ -187,7 +187,7 @@
                 };
             },
             mounted() {
-                fetch('https://ex-fkjs.onrender.com/api/lessons_info')
+                fetch('https://lessons-booking.onrender.com/api/lessons_info')
                     .then(response => response.json())
                     .then(data => {
                         this.list = data;
@@ -227,7 +227,7 @@
                         return;
                     }
 
-                    fetch(`https://ex-fkjs.onrender.com/api/search?q=${this.searchQuery}`)
+                    fetch(`https://lessons-booking.onrender.com/api/search?q=${this.searchQuery}`)
                         .then(response => response.json())
                         .then(data => {
                             console.log('Search Results:', data); // Log the results to the console
@@ -292,7 +292,7 @@
                     };
 
                     // Send data to the server to save the order
-                    fetch('https://ex-fkjs.onrender.com/api/orders', {
+                    fetch('https://lessons-booking.onrender.com/api/orders', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
@@ -307,7 +307,7 @@
                         // After successfully placing the order, update the availability of lessons
                         this.cart.forEach(item => {
                             const updatedAvail =item.avail - item.bookedSeats;
-                            fetch('https://ex-fkjs.onrender.com/api/update_lesson', {
+                            fetch('https://lessons-booking.onrender.com/api/update_lesson', {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
